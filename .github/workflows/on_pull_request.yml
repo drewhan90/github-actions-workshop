@@ -1,0 +1,31 @@
+name: On Pull Request Workflow
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  build:
+    name: Lint, Test and Build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+  
+  notify:
+    name: notify
+    runs-on: ubuntu-20.04
+    needs: [build]
+    steps:
+      - name: Post to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.18.0
+        with:
+          channel-id: C01F94JNZHD
+          slack-message: "WAZZZAAAAAAAAP!!!! ${{ github.repository }}\n ${{ github.event.pull_request.html_url }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
